@@ -72,15 +72,18 @@ if uploaded_file is not None:
     # Correlation Analysis
     st.sidebar.header("Correlation Analysis")
     if st.sidebar.button("Show Correlation Matrix"):
-        # Select only numeric columns for correlation analysis
-        numeric_df = df_filtered.select_dtypes(include=['number'])
-
-        if not numeric_df.empty:
+        # Let the user select which numeric columns to include in the correlation analysis
+        numeric_columns = df_filtered.select_dtypes(include=['number']).columns.tolist()
+        selected_columns = st.sidebar.multiselect('Select Columns for Correlation', numeric_columns, default=numeric_columns)
+        
+        # Filter the DataFrame based on selected columns
+        if selected_columns:
+            numeric_df = df_filtered[selected_columns]
             corr_matrix = numeric_df.corr()
-            fig_corr = px.imshow(corr_matrix, text_auto=True, aspect="auto", title="Correlation Matrix")
+            fig_corr = px.imshow(corr_matrix, text_auto=True, aspect="auto", labels=dict(color="Correlation"), title="Correlation Matrix")
             st.plotly_chart(fig_corr, use_container_width=True)
         else:
-            st.write("No numeric columns available for correlation analysis.")
+            st.sidebar.warning("Please select at least one numeric column for correlation analysis.")
 
 # Running Instructions
 st.sidebar.header("Instructions")
