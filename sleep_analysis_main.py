@@ -53,10 +53,14 @@ def add_custom_parameter_ui(df):
         if selected_parameter:
             # Update the formula building state
             st.session_state.formula_building += f" {selected_parameter}"
+            # Reset the trigger to default to ensure consistency
+            st.session_state.reset_formula_flag = False
 
     # User input for final formula modification or confirmation
-    confirmed_formula = st.sidebar.text_input('Confirm or modify formula', value=st.session_state.formula_building, key='confirmed_formula')
-
+    # Use the reset trigger to conditionally set the default value
+    default_formula_value = '' if st.session_state.reset_formula_flag else st.session_state.formula_building
+    confirmed_formula = st.sidebar.text_input('Confirm or modify formula', value=default_formula_value, key='confirmed_formula')
+    
     # Button to add the parameter
     if st.sidebar.button('Add Parameter'):
         if param_name and confirmed_formula:
@@ -71,7 +75,8 @@ def add_custom_parameter_ui(df):
  
     if st.sidebar.button('Clear Formula'):
         # Explicit user action to clear the confirmed formula
-        st.session_state['confirmed_formula'] = ''
+        st.session_state.reset_formula_flag = not st.session_state.reset_formula_flag
+
 
 
 # Function to create plots based on the selected type
@@ -92,6 +97,8 @@ if 'plots' not in st.session_state:
     st.session_state['plots'] = []
 if 'formula_building' not in st.session_state:
     st.session_state.formula_building = ''
+if 'reset_formula_flag' not in st.session_state:
+    st.session_state.reset_formula_flag = False
 
 # Main app starts here
 st.title('Excel Data Analysis Web App')
@@ -110,6 +117,7 @@ if uploaded_file is not None:
     st.write("Data Preview:")
     st.write(df.head())
 
+
     # Filtering subjects
     st.sidebar.header("Filter Subjects")
     unique_subjects = df['Id'].unique()
@@ -118,6 +126,8 @@ if uploaded_file is not None:
     # Filtering dataframe based on selected subjects
     df_filtered = df[df['Id'].isin(subjects_to_analyze)]
     
+    add_custom_parameter_ui(df_filtered)  # UI for adding custom parameters
+
     # Select pairs of columns and plot type
     st.sidebar.header("Analysis Settings")
     columns = df.columns.tolist()
@@ -125,7 +135,6 @@ if uploaded_file is not None:
     y_axis = st.sidebar.selectbox('Select Y-axis', options=columns, index=1)
     plot_type = st.sidebar.selectbox('Select Plot Type', options=['Line Plot', 'Scatter Plot', 'Histogram', 'Box Plot'])
 
-    add_custom_parameter_ui(df_filtered)  # UI for adding custom parameters
 
 
     # Add plot
