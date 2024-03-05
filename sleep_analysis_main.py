@@ -7,11 +7,28 @@ import numpy as np
 
 # Custom function to evaluate the user-defined formula
 def evaluate_formula(df, formula, param_name):
+    # Extract column names from the formula
+    columns = [col.strip() for col in formula.replace('+', ' ').replace('-', ' ').replace('*', ' ').replace('/', ' ').replace('(', ' ').replace(')', ' ').split()]
+    columns = set(filter(lambda x: x in df.columns, columns))  # Keep only valid column names
+
+    problematic_columns = []  # To store columns with types that cannot be converted to float
+    for col in columns:
+        if df[col].dtype == 'int64':
+            df[col] = df[col].astype(float)  # Convert int to float
+        elif pd.api.types.is_datetime64_any_dtype(df[col]):
+            problematic_columns.append((col, 'datetime'))
+        elif df[col].dtype == 'object' or pd.api.types.is_string_dtype(df[col]):
+            problematic_columns.append((col, 'string'))
+
+    if problematic_columns:
+        # Generate error message with problematic column names and their types
+        error_message = "Error: The following columns have incompatible types: " + ", ".join([f"{name} ({dtype})" for name, dtype in problematic_columns])
+        return False, error_message
+
     try:
-        # Using a temporary column name to evaluate and then rename
-        temp_col_name = 'temp_custom_parameter'
-        df[temp_col_name] = df.eval(formula)
-        df.rename(columns={temp_col_name: param_name}, inplace=True)
+        # Assuming df.eval can handle the formula after type checks and conversions
+        df['custom_parameter'] = df.eval(formula)
+        df.rename(columns={'custom_parameter': param_name}, inplace=True)
         return True, "Parameter added successfully!"
     except Exception as e:
         return False, str(e)
