@@ -116,34 +116,58 @@ if uploaded_file is not None:
     # Showing the dataframe
     st.write("Data Preview:")
     st.write(df.head())
+    
+        # Data Concatenation Settings Section
+    st.sidebar.header("Data Concatenation Settings")
+    concat_criteria = st.sidebar.selectbox('Select Criterion for Concatenation', ['None'] + list(df.columns), index=0)
+    concat_value = None
+    if concat_criteria != 'None':
+        concat_value = st.sidebar.text_input(f"Enter value for {concat_criteria} to filter and concatenate (e.g., '1' for Day 1):", key='concat_value')
 
+    concatenated_df = pd.DataFrame()
 
-    # Filtering subjects
+    if concat_criteria != 'None' and concat_value:
+        try:
+            # Convert concat_value to appropriate type, assuming it's numeric for simplicity
+            concat_value = int(concat_value)
+            filtered_df = df[df[concat_criteria] == concat_value]
+        except ValueError:
+            st.error("Please enter a valid numeric value for concatenation.")
+            filtered_df = pd.DataFrame()
+
+        if not filtered_df.empty:
+            concatenated_df = pd.concat([concatenated_df, filtered_df])
+            st.write("Concatenated Data Preview:")
+            st.write(concatenated_df.head())
+        else:
+            st.warning("No data matches the specified criteria for concatenation.")
+    else:
+        concatenated_df = df.copy()  # Use the original DataFrame if no concatenation criteria are specified
+
+    # Filtering subjects from the concatenated or original DataFrame
     st.sidebar.header("Filter Subjects")
-    unique_subjects = df['Id'].unique()
+    unique_subjects = concatenated_df['Id'].unique()
     subjects_to_analyze = st.sidebar.multiselect('Select Subjects', unique_subjects, default=unique_subjects)
     
-    # Filtering dataframe based on selected subjects
-    df_filtered = df[df['Id'].isin(subjects_to_analyze)]
-    
-    add_custom_parameter_ui(df_filtered)  # UI for adding custom parameters
+    # Filtering concatenated dataframe based on selected subjects
+    df_filtered = concatenated_df[concatenated_df['Id'].isin(subjects_to_analyze)]
+
+    # Custom parameter UI and analysis setup go here
+    add_custom_parameter_ui(df_filtered)
 
     # Select pairs of columns and plot type
     st.sidebar.header("Analysis Settings")
-    columns = df.columns.tolist()
+    columns = df_filtered.columns.tolist()
     x_axis = st.sidebar.selectbox('Select X-axis', options=columns, index=columns.index('dayOfExperiment') if 'dayOfExperiment' in columns else 0)
     y_axis = st.sidebar.selectbox('Select Y-axis', options=columns, index=1)
     plot_type = st.sidebar.selectbox('Select Plot Type', options=['Line Plot', 'Scatter Plot', 'Histogram', 'Box Plot'])
 
-
-
-    # Add plot
+    # Plotting based on user selections
     if st.sidebar.button("Add Plot") and len(st.session_state['plots']) < 4:
         fig = create_plot(plot_type, df_filtered, x_axis, y_axis)
         if fig:
             st.session_state['plots'].append(fig)
 
-    # Display plots
     for i, fig in enumerate(st.session_state['plots'], start=1):
         st.plotly_chart(fig, use_container_width=True)
         if st.button(f"Close Plot {i}"):
@@ -152,13 +176,10 @@ if uploaded_file is not None:
 
     # Correlation Analysis
     st.sidebar.header("Correlation Analysis")
-    
-    # Let the user select which numeric columns to include in the correlation analysis
     numeric_columns = df_filtered.select_dtypes(include=['number']).columns.tolist()
     selected_columns = st.sidebar.multiselect('Select Columns for Correlation', numeric_columns, default=numeric_columns)
     
     if st.sidebar.button("Show Correlation Matrix"):    
-        # Filter the DataFrame based on selected columns
         if selected_columns:
             numeric_df = df_filtered[selected_columns]
             corr_matrix = numeric_df.corr()
