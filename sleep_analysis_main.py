@@ -71,11 +71,12 @@ if uploaded_file is not None:
 
     # Correlation Analysis
     st.sidebar.header("Correlation Analysis")
-    if st.sidebar.button("Show Correlation Matrix"):
-        # Let the user select which numeric columns to include in the correlation analysis
-        numeric_columns = df_filtered.select_dtypes(include=['number']).columns.tolist()
-        selected_columns = st.sidebar.multiselect('Select Columns for Correlation', numeric_columns, default=numeric_columns)
-        
+    
+    # Let the user select which numeric columns to include in the correlation analysis
+    numeric_columns = df_filtered.select_dtypes(include=['number']).columns.tolist()
+    selected_columns = st.sidebar.multiselect('Select Columns for Correlation', numeric_columns, default=numeric_columns)
+    
+    if st.sidebar.button("Show Correlation Matrix"):    
         # Filter the DataFrame based on selected columns
         if selected_columns:
             numeric_df = df_filtered[selected_columns]
