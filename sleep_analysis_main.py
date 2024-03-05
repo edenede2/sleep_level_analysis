@@ -6,38 +6,46 @@ import numpy as np
 
 
 # Custom function to evaluate the user-defined formula
-def evaluate_formula(df, formula):
+def evaluate_formula(df, formula, param_name):
     try:
-        df['custom_parameter'] = df.eval(formula)
+        # Using a temporary column name to evaluate and then rename
+        temp_col_name = 'temp_custom_parameter'
+        df[temp_col_name] = df.eval(formula)
+        df.rename(columns={temp_col_name: param_name}, inplace=True)
         return True, "Parameter added successfully!"
     except Exception as e:
         return False, str(e)
 
 # Add custom parameter functionality
 def add_custom_parameter_ui(df):
-    with st.sidebar:
-        st.header("Create Custom Parameter")
-        all_columns = df.columns.tolist()
-        selected_parameter = st.selectbox('Select Parameter', [''] + all_columns, index=0, format_func=lambda x: x if x else 'Select...')
-        formula_input = st.text_input('Define Parameter (use columns as variables)', value='')
-        param_name = st.text_input('Name for New Parameter', value='')
+    st.sidebar.header("Create Custom Parameter")
+    all_columns = df.columns.tolist()
 
-        # Append selected parameter to formula
+    # Text input for the user to manually adjust formula
+    user_formula_input = st.sidebar.text_input('Define Parameter (use columns as variables)', key='user_formula')
+
+    selected_parameter = st.sidebar.selectbox('Select Parameter', [''] + all_columns, index=0, format_func=lambda x: x if x else 'Select...')
+
+    param_name = st.sidebar.text_input('Name for New Parameter', value='')
+
+    # Button to append selected parameter to formula
+    if st.sidebar.button('Append Parameter'):
         if selected_parameter:
-            formula_input = st.session_state.get('formula_input', '') + f" {selected_parameter}"
-            st.session_state['formula_input'] = formula_input
+            # Append selected parameter to the formula in the session state
+            new_formula = st.session_state.user_formula + f" {selected_parameter}"
+            st.session_state.user_formula = new_formula  # Update the session state to reflect the new formula
 
-        # Button to add the parameter
-        if st.button('Add Parameter'):
-            if param_name and formula_input:
-                success, message = evaluate_formula(df, formula_input)
-                if success:
-                    df.rename(columns={'custom_parameter': param_name}, inplace=True)
-                    st.success(message)
-                    # Reset the formula input in the session state
-                    st.session_state['formula_input'] = ''
-                else:
-                    st.error(f"Failed to add parameter: {message}")
+    # Button to add the parameter
+    if st.sidebar.button('Add Parameter'):
+        if param_name and st.session_state.user_formula:
+            success, message = evaluate_formula(df, st.session_state.user_formula, param_name)
+            if success:
+                st.success(message)
+                # Clear the formula in the session state after successful addition
+                st.session_state.user_formula = ''
+            else:
+                st.error(f"Failed to add parameter: {message}")
+
 
 
 # Function to create plots based on the selected type
@@ -56,8 +64,8 @@ def create_plot(plot_type, df, x_axis, y_axis):
 # Initialize a session state to manage plots and formula input
 if 'plots' not in st.session_state:
     st.session_state['plots'] = []
-if 'formula_input' not in st.session_state:
-    st.session_state['formula_input'] = ''
+if 'user_formula' not in st.session_state:
+    st.session_state.user_formula = ''
 
 # Main app starts here
 st.title('Excel Data Analysis Web App')
