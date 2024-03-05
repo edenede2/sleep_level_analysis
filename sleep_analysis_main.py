@@ -48,10 +48,13 @@ def add_custom_parameter_ui(df):
                 st.success(message)
                 # Reset formula building state after successful addition
                 st.session_state.formula_building = ''
-                st.session_state.confirmed_formula = ''  # Reset confirmed formula as well
+                # Note: We do not reset confirmed_formula here due to Streamlit constraints
             else:
                 st.error(f"Failed to add parameter: {message}")
-
+ 
+    if st.sidebar.button('Clear Formula'):
+        # Explicit user action to clear the confirmed formula
+        st.session_state['confirmed_formula'] = ''
 
 
 # Function to create plots based on the selected type
