@@ -16,33 +16,39 @@ def evaluate_formula(df, formula, param_name):
     except Exception as e:
         return False, str(e)
 
-# Add custom parameter functionality
+# Adjusted UI function to avoid direct modification after widget instantiation
 def add_custom_parameter_ui(df):
     st.sidebar.header("Create Custom Parameter")
     all_columns = df.columns.tolist()
 
-    # Text input for the user to manually adjust formula
-    user_formula_input = st.sidebar.text_input('Define Parameter (use columns as variables)', key='user_formula')
+    # Separate state for managing formula building
+    if 'formula_building' not in st.session_state:
+        st.session_state.formula_building = ''
+
+    # Display formula being built for user reference
+    st.sidebar.text(f"Formula: {st.session_state.formula_building}")
 
     selected_parameter = st.sidebar.selectbox('Select Parameter', [''] + all_columns, index=0, format_func=lambda x: x if x else 'Select...')
-
     param_name = st.sidebar.text_input('Name for New Parameter', value='')
 
-    # Button to append selected parameter to formula
+    # Button to append selected parameter to the building formula
     if st.sidebar.button('Append Parameter'):
         if selected_parameter:
-            # Append selected parameter to the formula in the session state
-            new_formula = st.session_state.user_formula + f" {selected_parameter}"
-            st.session_state.user_formula = new_formula  # Update the session state to reflect the new formula
+            # Update the formula building state
+            st.session_state.formula_building += f" {selected_parameter}"
+
+    # User input for final formula modification or confirmation
+    confirmed_formula = st.sidebar.text_input('Confirm or modify formula', value=st.session_state.formula_building, key='confirmed_formula')
 
     # Button to add the parameter
     if st.sidebar.button('Add Parameter'):
-        if param_name and st.session_state.user_formula:
-            success, message = evaluate_formula(df, st.session_state.user_formula, param_name)
+        if param_name and confirmed_formula:
+            success, message = evaluate_formula(df, confirmed_formula, param_name)
             if success:
                 st.success(message)
-                # Clear the formula in the session state after successful addition
-                st.session_state.user_formula = ''
+                # Reset formula building state after successful addition
+                st.session_state.formula_building = ''
+                st.session_state.confirmed_formula = ''  # Reset confirmed formula as well
             else:
                 st.error(f"Failed to add parameter: {message}")
 
@@ -64,8 +70,8 @@ def create_plot(plot_type, df, x_axis, y_axis):
 # Initialize a session state to manage plots and formula input
 if 'plots' not in st.session_state:
     st.session_state['plots'] = []
-if 'user_formula' not in st.session_state:
-    st.session_state.user_formula = ''
+if 'formula_building' not in st.session_state:
+    st.session_state.formula_building = ''
 
 # Main app starts here
 st.title('Excel Data Analysis Web App')
