@@ -71,10 +71,16 @@ if uploaded_file is not None:
 
     # Correlation Analysis
     st.sidebar.header("Correlation Analysis")
-    if st.sidebar.button("Show Correlation Matrix"):
-        corr_matrix = df_filtered.corr()
-        fig_corr = px.imshow(corr_matrix, text_auto=True, aspect="auto", title="Correlation Matrix")
-        st.plotly_chart(fig_corr, use_container_width=True)
+        if st.sidebar.button("Show Correlation Matrix"):
+            # Select only numeric columns for correlation analysis
+            numeric_df = df_filtered.select_dtypes(include=['number'])
+    
+            if not numeric_df.empty:
+                corr_matrix = numeric_df.corr()
+                fig_corr = px.imshow(corr_matrix, text_auto=True, aspect="auto", title="Correlation Matrix")
+                st.plotly_chart(fig_corr, use_container_width=True)
+            else:
+                st.write("No numeric columns available for correlation analysis.")
 
 # Running Instructions
 st.sidebar.header("Instructions")
