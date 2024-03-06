@@ -109,13 +109,11 @@ uploaded_file = st.sidebar.file_uploader("Choose a file", type=['csv', 'xlsx'])
 if uploaded_file is not None:
     # Reading the uploaded excel file
     if uploaded_file.name.endswith('.xlsx'):
-        st.session_state['df_modified'] = pd.read_excel(uploaded_file)
-        df = st.session_state['df_modified']
+        df = pd.read_excel(uploaded_file)
     else:
-        st.session_state['df_modified'] = pd.read_csv(uploaded_file)
-        df = st.session_state['df_modified']
+        df = pd.read_csv(uploaded_file)
 
-    # st.session_state['df_modified'] = df.copy()
+    st.session_state['df_modified'] = df.copy()
 
 
     # Showing the dataframe
@@ -162,6 +160,8 @@ if uploaded_file is not None:
 
     # Select pairs of columns and plot type
     st.sidebar.header("Analysis Settings")
+    df_filtered = st.session_state['df_modified'][st.session_state['df_modified']['Id'].isin(subjects_to_analyze)]
+
     columns = df_filtered.columns.tolist()
     x_axis = st.sidebar.selectbox('Select X-axis', options=columns, index=columns.index('dayOfExperiment') if 'dayOfExperiment' in columns else 0)
     y_axis = st.sidebar.selectbox('Select Y-axis', options=columns, index=1)
