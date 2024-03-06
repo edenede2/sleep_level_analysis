@@ -23,7 +23,7 @@ def evaluate_formula(df, formula, param_name):
     if problematic_columns:
         # Generate error message with problematic column names and their types
         error_message = "Error: The following columns have incompatible types: " + ", ".join([f"{name} ({dtype})" for name, dtype in problematic_columns])
-        return False, error_message
+        return False, error_message, None
 
     try:
         # Assuming df.eval can handle the formula after type checks and conversions
