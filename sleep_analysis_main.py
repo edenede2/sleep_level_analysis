@@ -27,11 +27,10 @@ def evaluate_formula(df, formula, param_name):
 
     try:
         # Assuming df.eval can handle the formula after type checks and conversions
-        df['custom_parameter'] = df.eval(formula)
-        df.rename(columns={'custom_parameter': param_name}, inplace=True)
-        return True, "Parameter added successfully!"
+        df[param_name] = df.eval(formula)
+        return True, "Parameter added successfully!", df
     except Exception as e:
-        return False, str(e)
+        return False, str(e), None
 
 # Adjusted UI function to avoid direct modification after widget instantiation
 def add_custom_parameter_ui(df):
@@ -64,11 +63,12 @@ def add_custom_parameter_ui(df):
     # Button to add the parameter
     if st.sidebar.button('Add Parameter'):
         if param_name and confirmed_formula:
-            success, message = evaluate_formula(df, confirmed_formula, param_name)
+            success, message, updated_df = evaluate_formula(df, confirmed_formula, param_name)
             if success:
                 st.success(message)
                 # Reset formula building state after successful addition
                 st.session_state.formula_building = ''
+                st.session_state['df_modified'] = updated_df
                 # Note: We do not reset confirmed_formula here due to Streamlit constraints
             else:
                 st.error(f"Failed to add parameter: {message}")
@@ -112,7 +112,12 @@ if uploaded_file is not None:
         df = pd.read_excel(uploaded_file)
     else:
         df = pd.read_csv(uploaded_file)
-    
+
+    st.session_state['df_modified'] = df.copy()
+
+    df = st.session_state['df_modified']
+
+
     # Showing the dataframe
     st.write("Data Preview:")
     st.write(df.head())
