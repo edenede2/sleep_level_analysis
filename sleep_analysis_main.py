@@ -71,6 +71,7 @@ def add_custom_parameter_ui(df):
                 st.session_state['df_modified'] = updated_df
                 # Note: We do not reset confirmed_formula here due to Streamlit constraints
             else:
+                st.session_state.formula_building = ''
                 st.error(f"Failed to add parameter: {message}")
  
     if st.sidebar.button('Clear Formula'):
