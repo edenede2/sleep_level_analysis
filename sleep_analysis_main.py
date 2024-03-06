@@ -109,13 +109,13 @@ uploaded_file = st.sidebar.file_uploader("Choose a file", type=['csv', 'xlsx'])
 if uploaded_file is not None:
     # Reading the uploaded excel file
     if uploaded_file.name.endswith('.xlsx'):
-        df = pd.read_excel(uploaded_file)
+        st.session_state['df_modified'] = pd.read_excel(uploaded_file)
+        df = st.session_state['df_modified']
     else:
-        df = pd.read_csv(uploaded_file)
+        st.session_state['df_modified'] = pd.read_csv(uploaded_file)
+        df = st.session_state['df_modified']
 
-    st.session_state['df_modified'] = df.copy()
-
-    df = st.session_state['df_modified']
+    # st.session_state['df_modified'] = df.copy()
 
 
     # Showing the dataframe
