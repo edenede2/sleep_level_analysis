@@ -77,6 +77,8 @@ def add_custom_parameter_ui(df):
     if st.sidebar.button('Clear Formula'):
         # Explicit user action to clear the confirmed formula
         st.session_state.reset_formula_flag = not st.session_state.reset_formula_flag
+        st.session_state.formula_building = ''
+
         
 
 
