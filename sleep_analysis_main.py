@@ -53,7 +53,7 @@ def add_custom_parameter_ui(df):
             # Update the formula building state
             st.session_state.formula_building += f" {selected_parameter}"
             # Reset the trigger to default to ensure consistency
-            # st.session_state.reset_formula_flag = False
+            st.session_state.reset_formula_flag = False
 
     # User input for final formula modification or confirmation
     # Use the reset trigger to conditionally set the default value
@@ -76,6 +76,7 @@ def add_custom_parameter_ui(df):
     if st.sidebar.button('Clear Formula'):
         # Explicit user action to clear the confirmed formula
         st.session_state.reset_formula_flag = not st.session_state.reset_formula_flag
+        
 
 
 
