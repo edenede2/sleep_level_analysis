@@ -213,13 +213,12 @@ if uploaded_file is not None:
                 z=corr_matrix.values,
                 x=corr_matrix.columns,
                 y=corr_matrix.index,
-                text=np.round(corr_matrix, 2),  # Optionally round the correlation values for display
-                texttemplate="%{text}",
                 hoverongaps=False,
                 hoverinfo="text",
-                colorscale=[[0, 'red'], [0.5, 'white'], [1, 'blue']],  # This is not directly used but kept for reference
-                showscale=False,  # Optionally turn off the color scale since we're manually setting colors
-                colorbar=dict(title='Correlation'),
+                hovertext=hover_text,
+                text=cell_text,  # Display correlation coefficients directly on the cells
+                colorscale=[[0, 'red'], [0.5, 'white'], [1, 'blue']],
+                showscale=False,  # Turn off the color scale since we're manually setting colors
             ))
         
             # Update layout to add titles and adjust as necessary
