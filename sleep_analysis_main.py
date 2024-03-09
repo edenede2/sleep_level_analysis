@@ -198,14 +198,31 @@ if uploaded_file is not None:
     if st.sidebar.button("Show Correlation Matrix"):    
         if selected_columns:
             numeric_df = df_filtered[selected_columns]
-            corr_matrix = numeric_df.corr()
-            fig_corr = px.imshow(corr_matrix,
-                                 text_auto=True,
-                                 aspect="auto",
-                                 labels=dict(color="Correlation"),
-                                 title="Correlation Matrix",
-                                color_continuous_scale="RdBu_r")
-            st.plotly_chart(fig_corr, use_container_width=True)
+            corr_matrix = numeric_df.corr().values  # Get correlation matrix as a numpy array for color mapping
+        
+            # Generate a color map based on the sign of the correlation values
+            colors = np.where(corr_matrix > 0, 'blue', 'red')  # Blue for positive, red for negative correlations
+            # For values exactly 0, you may want to set them white or any other color
+            colors[corr_matrix == 0] = 'white'
+        
+            # Create the figure with Graph Objects for more customization
+            fig = go.Figure(data=go.Heatmap(
+                z=corr_matrix,
+                x=numeric_df.columns,
+                y=numeric_df.columns,
+                text=np.round(corr_matrix, 2),  # Optionally round the correlation values for display
+                texttemplate="%{text}",
+                hoverinfo="text",
+                colorscale=[[0, 'red'], [0.5, 'white'], [1, 'blue']],  # This is not directly used but kept for reference
+                showscale=False,  # Turn off the color scale since we're manually setting colors
+                colorbar=dict(title='Correlation'),
+            ))
+        
+            # Update layout to add titles and adjust as necessary
+            fig.update_layout(title_text='Correlation Matrix', title_x=0.5)
+        
+            # Display the figure in Streamlit
+            st.plotly_chart(fig, use_container_width=True)
         else:
             st.sidebar.warning("Please select at least one numeric column for correlation analysis.")
 
