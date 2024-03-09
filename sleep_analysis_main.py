@@ -208,14 +208,14 @@ if uploaded_file is not None:
         
             # Create the figure with Graph Objects for more customization
             fig = go.Figure(data=go.Heatmap(
-                z=corr_matrix,
-                x=numeric_df.columns,
-                y=numeric_df.columns,
-                text=np.round(corr_matrix, 2),  # Optionally round the correlation values for display
-                texttemplate="%{text}",
+                z=corr_matrix.values,
+                x=corr_matrix.columns,
+                y=corr_matrix.index,
+                hoverongaps=False,
                 hoverinfo="text",
-                showscale=True,  # Turn off the color scale since we're manually setting colors
-                colorbar=dict(title='Correlation'),
+                text=hover_text,
+                colorscale=[[0, 'red'], [0.5, 'white'], [1, 'blue']],  # This is not directly used but kept for reference
+                showscale=False,  # Optionally turn off the color scale since we're manually setting colors
             ))
         
             # Update layout to add titles and adjust as necessary
