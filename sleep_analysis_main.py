@@ -204,7 +204,7 @@ if uploaded_file is not None:
                                  aspect="auto",
                                  labels=dict(color="Correlation"),
                                  title="Correlation Matrix",
-                                color_continuous_scale=color_scale)
+                                color_continuous_scale="RdBu_r")
             st.plotly_chart(fig_corr, use_container_width=True)
         else:
             st.sidebar.warning("Please select at least one numeric column for correlation analysis.")
