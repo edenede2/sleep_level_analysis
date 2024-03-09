@@ -187,12 +187,24 @@ if uploaded_file is not None:
     st.sidebar.header("Correlation Analysis")
     numeric_columns = df_filtered.select_dtypes(include=['number']).columns.tolist()
     selected_columns = st.sidebar.multiselect('Select Columns for Correlation', numeric_columns, default=numeric_columns)
+
+    color_scale = [
+            [-1, "red"],  # Negative correlation
+            [0, "white"],  # No correlation
+            [1, "blue"]  # Positive correlation
+        ]
+
     
     if st.sidebar.button("Show Correlation Matrix"):    
         if selected_columns:
             numeric_df = df_filtered[selected_columns]
             corr_matrix = numeric_df.corr()
-            fig_corr = px.imshow(corr_matrix, text_auto=True, aspect="auto", labels=dict(color="Correlation"), title="Correlation Matrix")
+            fig_corr = px.imshow(corr_matrix,
+                                 text_auto=True,
+                                 aspect="auto",
+                                 labels=dict(color="Correlation"),
+                                 title="Correlation Matrix",
+                                color_continuous_scale=color_scale)
             st.plotly_chart(fig_corr, use_container_width=True)
         else:
             st.sidebar.warning("Please select at least one numeric column for correlation analysis.")
