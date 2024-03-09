@@ -213,8 +213,11 @@ if uploaded_file is not None:
                 x=corr_matrix.columns,
                 y=corr_matrix.index,
                 hoverongaps=False,
+                texttemplate="%{text}",
                 hoverinfo="text",
                 hovertext=hover_text,
+                text=cell_text,  # Display correlation coefficients directly on the cells
+
                 colorscale=color_scale,
                 zmid=0,  # This ensures the scale is centered on zero
             ))
