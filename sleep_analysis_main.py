@@ -201,13 +201,16 @@ if uploaded_file is not None:
             numeric_df = df_filtered[selected_columns]
             corr_matrix = numeric_df.corr()
         
+            # Generate the text for each cell to display the correlation coefficient
+            cell_text = np.around(corr_matrix.values, decimals=2).astype(str)
+            
             # Prepare hover text that includes the names of the parameters and their correlation value
             hover_text = [[f"{row}, {col}<br>Correlation: {corr_matrix.loc[row, col]:.2f}" for col in corr_matrix.columns] for row in corr_matrix.index]
         
             # Define colors based on the correlation values: blue for positive, red for negative
-            colors = np.where(corr_matrix.values > 0, 'blue', 'red')  # Blue for positive, red for negative correlations
-            colors[corr_matrix.values == 0] = 'white'  # Optional: set exactly 0 correlations to white
-        
+            color_scale = np.where(corr_matrix.values > 0, 'blue', 'red')  # Blue for positive, red for negative correlations
+            color_scale[corr_matrix.values == 0] = 'white'  # Set exactly 0 correlations to white
+
             # Create the figure with Graph Objects
             fig = go.Figure(data=go.Heatmap(
                 z=corr_matrix.values,
