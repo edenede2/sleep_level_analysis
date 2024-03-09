@@ -214,8 +214,7 @@ if uploaded_file is not None:
                 text=np.round(corr_matrix, 2),  # Optionally round the correlation values for display
                 texttemplate="%{text}",
                 hoverinfo="text",
-                colorscale=[[0, 'red'], [0.5, 'white'], [1, 'blue']],  # This is not directly used but kept for reference
-                showscale=False,  # Turn off the color scale since we're manually setting colors
+                showscale=True,  # Turn off the color scale since we're manually setting colors
                 colorbar=dict(title='Correlation'),
             ))
         
