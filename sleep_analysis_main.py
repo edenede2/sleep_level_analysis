@@ -200,7 +200,9 @@ if uploaded_file is not None:
         if selected_columns:
             numeric_df = df_filtered[selected_columns]
             corr_matrix = numeric_df.corr()
-        
+            
+            cell_text = np.around(corr_matrix.values, decimals=2).astype(str)
+
             # Hover text includes the names of the parameters and their correlation value
             hover_text = [[f"{row}, {col}<br>Correlation: {corr_matrix.loc[row, col]:.2f}" for col in corr_matrix.columns] for row in corr_matrix.index]
         
