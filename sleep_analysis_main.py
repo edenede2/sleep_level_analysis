@@ -217,7 +217,6 @@ if uploaded_file is not None:
                 texttemplate="%{text}",
                 hoverongaps=False,
                 hoverinfo="text",
-                text=hover_text,
                 colorscale=[[0, 'red'], [0.5, 'white'], [1, 'blue']],  # This is not directly used but kept for reference
                 showscale=False,  # Optionally turn off the color scale since we're manually setting colors
                 colorbar=dict(title='Correlation'),
