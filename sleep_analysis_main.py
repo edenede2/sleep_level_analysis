@@ -201,16 +201,12 @@ if uploaded_file is not None:
             numeric_df = df_filtered[selected_columns]
             corr_matrix = numeric_df.corr()
         
-            # Generate the text for each cell to display the correlation coefficient
-            cell_text = np.around(corr_matrix.values, decimals=2).astype(str)
-            
-            # Prepare hover text that includes the names of the parameters and their correlation value
+            # Hover text includes the names of the parameters and their correlation value
             hover_text = [[f"{row}, {col}<br>Correlation: {corr_matrix.loc[row, col]:.2f}" for col in corr_matrix.columns] for row in corr_matrix.index]
         
             # Define colors based on the correlation values: blue for positive, red for negative
-            color_scale = np.where(corr_matrix.values > 0, 'blue', 'red')  # Blue for positive, red for negative correlations
-            color_scale[corr_matrix.values == 0] = 'white'  # Set exactly 0 correlations to white
-
+            color_scale = "RdBu"  # Using Plotly's built-in Red-Blue color scale which is diverging and suitable for correlation matrices
+        
             # Create the figure with Graph Objects
             fig = go.Figure(data=go.Heatmap(
                 z=corr_matrix.values,
@@ -219,9 +215,8 @@ if uploaded_file is not None:
                 hoverongaps=False,
                 hoverinfo="text",
                 hovertext=hover_text,
-                text=cell_text,  # Display correlation coefficients directly on the cells
-                colorscale=[[0, 'red'], [0.5, 'white'], [1, 'blue']],
-                showscale=False,  # Turn off the color scale since we're manually setting colors
+                colorscale=color_scale,
+                zmid=0,  # This ensures the scale is centered on zero
             ))
         
             # Update layout to add titles and adjust as necessary
