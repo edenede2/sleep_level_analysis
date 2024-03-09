@@ -199,14 +199,16 @@ if uploaded_file is not None:
     if st.sidebar.button("Show Correlation Matrix"):    
         if selected_columns:
             numeric_df = df_filtered[selected_columns]
-            corr_matrix = numeric_df.corr().values  # Get correlation matrix as a numpy array for color mapping
+            corr_matrix = numeric_df.corr()
         
-            # Generate a color map based on the sign of the correlation values
-            colors = np.where(corr_matrix > 0, 'blue', 'red')  # Blue for positive, red for negative correlations
-            # For values exactly 0, you may want to set them white or any other color
-            colors[corr_matrix == 0] = 'white'
+            # Prepare hover text that includes the names of the parameters and their correlation value
+            hover_text = [[f"{row}, {col}<br>Correlation: {corr_matrix.loc[row, col]:.2f}" for col in corr_matrix.columns] for row in corr_matrix.index]
         
-            # Create the figure with Graph Objects for more customization
+            # Define colors based on the correlation values: blue for positive, red for negative
+            colors = np.where(corr_matrix.values > 0, 'blue', 'red')  # Blue for positive, red for negative correlations
+            colors[corr_matrix.values == 0] = 'white'  # Optional: set exactly 0 correlations to white
+        
+            # Create the figure with Graph Objects
             fig = go.Figure(data=go.Heatmap(
                 z=corr_matrix.values,
                 x=corr_matrix.columns,
