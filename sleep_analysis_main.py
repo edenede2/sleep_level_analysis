@@ -4,6 +4,39 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 
+# Function to parse and filter data based on user input
+def parse_and_filter_data(filter_input, dataframe, column_name):
+    specific_values = []
+    range_values = []
+    
+    # Split the input by comma to separate different values or ranges
+    inputs = filter_input.split(',')
+    for input_val in inputs:
+        if '-' in input_val:  # Identify range values
+            start, end = map(int, input_val.split('-'))
+            range_values.extend(list(range(start, end + 1)))
+        else:  # Specific value
+            try:
+                specific_values.append(int(input_val))
+            except ValueError:
+                continue  # Ignore invalid inputs
+    
+    # Combine specific values and range values, remove duplicates
+    all_values = list(set(specific_values + range_values))
+    
+    # Filter the DataFrame based on these values
+    filtered_df = dataframe[dataframe[column_name].isin(all_values)]
+    
+    return filtered_df
+
+# Adjusted UI function to include filtering UI
+def add_filter_ui(df):
+    st.sidebar.header("Data Filtering")
+    filter_column = st.sidebar.selectbox('Column to Filter', df.columns)
+    filter_criteria = st.sidebar.text_input("Enter filter values (e.g., '1,2,3-5'):", key='filter_criteria')
+    if st.sidebar.button("Apply Filter"):
+        filtered_df = parse_and_filter_data(filter_criteria, df, filter_column)
+        st.session_state['df_filtered'] = filtered_df
 
 
 # Custom function to evaluate the user-defined formula
@@ -97,7 +130,11 @@ def create_plot(plot_type, df, x_axis, y_axis):
     else:
         return None
 
-# Initialize a session state to manage plots and formula input
+# Initialize session states
+if 'df_modified' not in st.session_state:
+    st.session_state['df_modified'] = pd.DataFrame()
+if 'df_filtered' not in st.session_state:
+    st.session_state['df_filtered'] = pd.DataFrame()
 if 'plots' not in st.session_state:
     st.session_state['plots'] = []
 if 'formula_building' not in st.session_state:
@@ -119,15 +156,28 @@ if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
 
     st.session_state['df_modified'] = df.copy()
+    st.session_state['df_filtered'] = df.copy()  # Initialize filtered DataFrame with original data
 
 
     # Showing the dataframe
     st.write("Data Preview:")
     st.write(df.head())
+
+    # Include the filter UI
+    add_filter_ui(st.session_state['df_modified'])
+
+    # Proceed with analysis using 'df_filtered' from the session state
+    df_filtered = st.session_state['df_filtered']
     
-        # Data Concatenation Settings Section
+    # Show filtered data preview
+    st.write("Filtered Data Preview:")
+    st.write(df_filtered.head())
+
+
+    
+    # Data Concatenation Settings Section
     st.sidebar.header("Data Concatenation Settings")
-    concat_criteria = st.sidebar.selectbox('Select Criterion for Concatenation', ['None'] + list(df.columns), index=0)
+    concat_criteria = st.sidebar.selectbox('Select Criterion for Concatenation', ['None'] + list(df_filtered.columns), index=0)
     concat_value = None
     if concat_criteria != 'None':
         concat_value = st.sidebar.text_input(f"Enter value for {concat_criteria} to filter and concatenate (e.g., '1' for Day 1):", key='concat_value')
@@ -138,7 +188,7 @@ if uploaded_file is not None:
         try:
             # Convert concat_value to appropriate type, assuming it's numeric for simplicity
             concat_value = int(concat_value)
-            filtered_df = df[df[concat_criteria] == concat_value]
+            filtered_df = df_filtered[df_filtered[concat_criteria] == concat_value]
         except ValueError:
             st.error("Please enter a valid numeric value for concatenation.")
             filtered_df = pd.DataFrame()
