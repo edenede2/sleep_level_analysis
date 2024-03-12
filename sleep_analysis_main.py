@@ -163,6 +163,7 @@ if uploaded_file is not None:
     st.write("Data Preview:")
     st.write(df.head())
 
+    st.sidebar.header("Filter values")
     # Include the filter UI
     add_filter_ui(st.session_state['df_modified'])
 
